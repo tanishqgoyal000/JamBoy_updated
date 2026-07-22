@@ -62,7 +62,7 @@ realism:
   altitude_variation_m: 5.0
 
 geo_match:
-  descriptor: orb
+  descriptor: loftr
   nfeatures: 500
   lowe_ratio: 0.7
   min_good_matches: 8
@@ -73,8 +73,11 @@ geo_match:
   reference_altitude_m: 100.0
   altitude_scale_tolerance: 0.35
   ransac_threshold: 5.0
-  match_hz: 30
+  match_hz: 1
   max_candidate_tiles: 4
+  loftr_weights: outdoor
+  loftr_max_dim: 640
+  loftr_conf: 0.5
   edge_mode: hybrid
   edge_canny: true
   tile_size: 512

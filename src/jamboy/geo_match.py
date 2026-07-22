@@ -58,7 +58,20 @@ class GeoMatcher:
 
         self.descriptor_name = self.config.get("descriptor", "orb").lower()
         nfeat = int(self.config.get("nfeatures", 500))
-        if self.descriptor_name == "sift":
+
+        if self.descriptor_name == "loftr":
+            from jamboy.loftr_backend import LoFTRBackend, loftr_match_tile
+            self._loftr = LoFTRBackend(
+                device=device,
+                pretrained=self.config.get("loftr_weights", "outdoor"),
+                max_dim=int(self.config.get("loftr_max_dim", 640)),
+                conf_threshold=float(self.config.get("loftr_conf", 0.5)),
+            )
+            self._loftr_match_tile = loftr_match_tile.__get__(self)
+            self.detector = None
+            self.matcher = None
+            self.gpu_matcher = None
+        elif self.descriptor_name == "sift":
             self.detector = cv2.SIFT_create(nfeatures=nfeat)
             index_params = dict(algorithm=1, trees=5)
             search_params = dict(checks=50)
@@ -268,6 +281,12 @@ class GeoMatcher:
         tile: MapTile,
         altitude_m: float | None = None,
     ) -> GeoFix | None:
+        if self.descriptor_name == "loftr":
+            fix = self._loftr_match_tile(live_gray, tile, altitude_m=altitude_m)
+            if fix is not None:
+                return fix
+            return self._template_match_tile(live_gray, tile)
+
         candidates: list[GeoFix | None] = []
 
         if not self.edge_only:
@@ -406,7 +425,7 @@ class GeoMatcher:
                     best = fix
                     best_tile_key = tile.key
 
-            if best is None:
+            if best is None and self.descriptor_name != "loftr":
                 for tile in self.map_index.get_all_tiles():
                     if tile.key == best_tile_key:
                         continue
