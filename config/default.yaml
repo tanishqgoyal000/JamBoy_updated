@@ -62,7 +62,7 @@ realism:
   altitude_variation_m: 5.0
 
 geo_match:
-  descriptor: loftr
+  descriptor: orb
   nfeatures: 500
   lowe_ratio: 0.7
   min_good_matches: 8

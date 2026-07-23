@@ -93,9 +93,9 @@ class JamBoyEKF:
         H[0, 3] = 1.0
         H[1, 4] = 1.0
         R = np.eye(2) * self.r_flow
-        return self._update_state(np.array([[vx], [vy]]), H, R)
+        return self._update_state(np.array([[vx], [vy]]), H, R, gate=False)
 
-    def _update_state(self, z: np.ndarray, H: np.ndarray, R: np.ndarray) -> bool:
+    def _update_state(self, z: np.ndarray, H: np.ndarray, R: np.ndarray, gate: bool = True) -> bool:
         y = z - (H @ self.x)
         S = H @ self.P @ H.T + R
         try:
@@ -105,7 +105,7 @@ class JamBoyEKF:
             self._last_reject_reason = "singular_S"
             return False
 
-        if mahal > self.gate_threshold:
+        if gate and mahal > self.gate_threshold:
             self._last_reject_reason = f"mahalanobis={mahal:.2f}"
             return False
 

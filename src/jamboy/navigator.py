@@ -140,8 +140,11 @@ class Navigator:
                     self.dead_reckon_start = None
                     self._transition(NavState.CRUISE)
 
-        if flow.valid and self.state == NavState.DEAD_RECKON:
-            self.ekf.update_velocity(flow.vx, flow.vy)
+        if flow.valid:
+            ok = self.ekf.update_velocity(flow.vx, flow.vy)
+            print(f"[DEBUG] frame vx={flow.vx:.3f} vy={flow.vy:.3f} accepted={ok}")
+        else:
+            print("[DEBUG] flow invalid")
 
         if self.state == NavState.INIT and geo_fix is None:
             return self._status(flow=flow)
